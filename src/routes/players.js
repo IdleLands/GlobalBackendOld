@@ -70,12 +70,16 @@ exports.route = (app) => {
       DB.$collectibles.findOne(query),
       DB.$achievements.findOne(query)
 
-    ]).then(([player, statistics, pets, collectibles, achievements]) => {
+    ]).then(([overview, statistics, pets, collectibles, achievements]) => {
 
-      player.statistics = statistics;
-      player.pets = pets;
-      player.collectibles = collectibles;
-      player.achievements = achievements;
+      const player = {
+        overview,
+        equipment: overview.equipment,
+        statistics: statistics.stats,
+        pets: pets,
+        collectibles: collectibles.collectibles,
+        achievements: achievements.achievements
+      };
 
       res.json({ player });
 
