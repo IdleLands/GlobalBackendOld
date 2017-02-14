@@ -72,6 +72,8 @@ exports.route = (app) => {
 
     ]).then(([overview, statistics, pets, collectibles, achievements]) => {
 
+      overview.ascensionLevel = _.get(statistics, 'stats.Character.Ascension.Times', 0);
+
       const player = {
         overview,
         equipment: overview.equipment,
