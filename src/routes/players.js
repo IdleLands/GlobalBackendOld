@@ -5,7 +5,7 @@ const { DB } = require('../db');
 
 const playersFields = {
   name: 1,
-  level: 1,
+  _level: 1,
   professionName: 1,
   map: 1,
   gender: 1
@@ -13,7 +13,7 @@ const playersFields = {
 
 const playerFields = {
   name: 1,
-  level: 1,
+  _level: 1,
   professionName: 1,
   map: 1,
   mapRegion: 1,
@@ -21,9 +21,9 @@ const playerFields = {
   gender: 1,
   gold: 1,
   joinDate: 1,
-  hp: 1,
-  mp: 1,
-  xp: 1,
+  _hp: 1,
+  _mp: 1,
+  _xp: 1,
   statCache: 1
 };
 
