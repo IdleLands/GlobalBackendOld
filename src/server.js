@@ -6,7 +6,7 @@ const { DB } = require('./db');
 
 DB.isReady.then(() => {
   const app = express();
-  app.use(require('cors'));
+  app.use(require('cors')());
 
   const port = process.env.PORT || 3000;
   app.listen(port, () => {
