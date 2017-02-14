@@ -1,0 +1,29 @@
+{
+  "name": "globalbackend",
+  "version": "0.0.0",
+  "description": "A backend for idlelands global.",
+  "main": "index.js",
+  "scripts": {
+    "start:dev": "nodemon --exec node -- index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/IdleLands/GlobalBackend.git"
+  },
+  "author": "Kyle Kemp <kyle@seiyria.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/IdleLands/GlobalBackend/issues"
+  },
+  "homepage": "https://github.com/IdleLands/GlobalBackend#readme",
+  "dependencies": {
+    "dotenv": "^4.0.0",
+    "express": "^4.14.1",
+    "lodash": "^4.17.4",
+    "mongodb": "^2.2.23"
+  },
+  "devDependencies": {
+    "nodemon": "^1.11.0"
+  }
+}
