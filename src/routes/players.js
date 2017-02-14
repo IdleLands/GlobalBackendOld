@@ -44,9 +44,16 @@ exports.route = (app) => {
               _.each(ascensionModels, playerStatistics => {
                 _.find(arr, { name: playerStatistics._id }).ascensionLevel = _.get(playerStatistics, 'stats.Character.Ascension.Times', 0);
               });
+
               res.json({ players: arr });
+
+            }).catch(err => {
+
+              res.status(500).json({ err });
             });
+
         }).catch(err => {
+
           res.status(500).json({ err });
         });
     });
@@ -73,6 +80,7 @@ exports.route = (app) => {
       res.json({ player });
 
     }).catch(err => {
+
       res.status(500).json({ err });
     });
   });
