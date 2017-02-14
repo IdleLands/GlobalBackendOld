@@ -34,7 +34,6 @@ exports.route = (app) => {
 
       data.toArray()
         .then(arr => {
-          console.log(arr);
 
           const ascensionPromises = _.map(arr, player => {
             return DB.$statistics.findOne({ _id: player.name }, { 'stats.Character.Ascension.Times': 1 });
@@ -47,6 +46,8 @@ exports.route = (app) => {
               });
               res.json({ players: arr });
             });
+        }).catch(err => {
+          res.status(500).json({ err });
         });
     });
   });
@@ -70,6 +71,9 @@ exports.route = (app) => {
       player.achievements = achievements;
 
       res.json({ player });
+
+    }).catch(err => {
+      res.status(500).json({ err });
     });
   });
 };
