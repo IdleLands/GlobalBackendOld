@@ -66,7 +66,7 @@ exports.route = (app) => {
 
     ]).then(cursors => {
       const cursorPromises = _.map(cursors, cursor => cursor.toArray());
-      return Promise.all(cursorPromises.concat(DB.$players.count()));
+      return Promise.all(cursorPromises.concat(DB.$players.count(), DB.$players.count({ isOnline: true })));
     }).then(([
       professions,
       maps,
@@ -76,7 +76,8 @@ exports.route = (app) => {
       damage,
 
       // new things go above this line because the count promise is concat'd in
-      playerCount
+      playerCount,
+      playerOnlineCount
     ]) => {
       res.json({
         professions,
@@ -85,7 +86,8 @@ exports.route = (app) => {
         events: events[0],
         steps: steps[0],
         damage: damage[0],
-        playerCount
+        playerCount,
+        playerOnlineCount
       });
     }).catch(e => console.error(e));
   });
