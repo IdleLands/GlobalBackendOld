@@ -16,6 +16,7 @@ exports.route = (app) => {
       ]),
 
       DB.$players.aggregate([
+        { $match: { isOnline: { $exists: true, $eq: true } } },
         {
           $group: {
             _id: '$map',
@@ -62,6 +63,16 @@ exports.route = (app) => {
             totalDamage: { $sum: '$stats.Combat.Give.Damage' }
           }
         }
+      ]),
+
+      DB.$players.aggregate([
+        { $match: { 'gold': { $exists: true } } },
+        {
+          $group: {
+            _id: 'totalGold',
+            totalGold: { $sum: '$gold' }
+          }
+        }
       ])
 
     ]).then(cursors => {
@@ -74,6 +85,7 @@ exports.route = (app) => {
       events,
       steps,
       damage,
+      gold,
 
       // new things go above this line because the count promise is concat'd in
       playerCount,
@@ -83,9 +95,10 @@ exports.route = (app) => {
         professions,
         maps,
         pets,
-        events: events[0],
-        steps: steps[0],
-        damage: damage[0],
+        events: events[0].totalEvents,
+        steps: steps[0].totalSteps,
+        damage: damage[0].totalDamage,
+        gold: gold[0].totalGold,
         playerCount,
         playerOnlineCount
       });
