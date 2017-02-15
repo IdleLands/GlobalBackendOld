@@ -30,6 +30,12 @@ const queries = {
   luck: {},
   combatWin: {
     'stats.Combat.Win': { $gt: 0 }
+  },
+  events: {
+    'stats.Character.Events': { $gt: 0 }
+  },
+  soloSteps: {
+    'stats.Character.Movement.Solo': { $gt: 0 }
   }
 };
 
@@ -60,6 +66,12 @@ const fields = {
   },
   combatWin: {
     'stats.Combat.Win': 1
+  },
+  events: {
+    'stats.Character.Events': 1
+  },
+  soloSteps: {
+    'stats.Character.Movement.Solo': 1
   }
 };
 
@@ -93,6 +105,12 @@ const params = {
   },
   combatWin: {
     sort: { 'stats.Combat.Win': -1 }, limit: RUNNER_UPS
+  },
+  events: {
+    sort: { 'stats.Character.Events': -1 }, limit: RUNNER_UPS
+  },
+  soloSteps: {
+    sort: { 'stats.Character.Movement.Solo': -1 }, limit: RUNNER_UPS
   }
 };
 
@@ -101,7 +119,9 @@ const formatters = {
   level:     (obj) => ({ _id: obj._id, level: _.get(obj, '_level.__current', 0) }),
   steps:     (obj) => ({ _id: obj._id, steps: _.get(obj, 'stats.Character.Steps', 0) }),
   luck:      (obj) => ({ _id: obj._id, luk: _.get(obj, 'statCache.luk', 0) }),
-  combatWin: (obj) => ({ _id: obj._id, combatWin: _.get(obj, 'stats.Combat.Win', 0) })
+  combatWin: (obj) => ({ _id: obj._id, combatWin: _.get(obj, 'stats.Combat.Win', 0) }),
+  events:    (obj) => ({ _id: obj._id, events: _.get(obj, 'stats.Character.Events', 0) }),
+  soloSteps: (obj) => ({ _id: obj._id, steps: _.get(obj, 'stats.Character.Movement.Solo', 0) })
 };
 
 exports.route = (app) => {
@@ -116,7 +136,9 @@ exports.route = (app) => {
       DB.$statistics.find(queries.steps, fields.steps, params.steps),
       DB.$players.find(queries.luck, fields.luck, params.goodLuck),
       DB.$players.find(queries.luck, fields.luck, params.badLuck),
-      DB.$statistics.find(queries.combatWin, fields.combatWin, params.combatWin)
+      DB.$statistics.find(queries.combatWin, fields.combatWin, params.combatWin),
+      DB.$statistics.find(queries.events, fields.events, params.events),
+      DB.$statistics.find(queries.soloSteps, fields.soloSteps, params.soloSteps)
     ]).then(cursors => {
       return Promise.all(_.map(cursors, cursor => cursor.toArray()));
     }).then(([
@@ -129,7 +151,9 @@ exports.route = (app) => {
       stepLeaders,
       goodLuckLeaders,
       badLuckLeaders,
-      combatWinLeaders
+      combatWinLeaders,
+      eventLeaders,
+      soloLeaders
     ]) => {
       res.json({
         ascensionLeaders: _.map(ascensionLeaders, formatters.ascension),
@@ -141,7 +165,9 @@ exports.route = (app) => {
         stepLeaders: _.map(stepLeaders, formatters.steps),
         goodLuckLeaders: _.map(goodLuckLeaders, formatters.luck),
         badLuckLeaders: _.map(badLuckLeaders, formatters.luck),
-        combatWinLeaders: _.map(combatWinLeaders, formatters.combatWin)
+        combatWinLeaders: _.map(combatWinLeaders, formatters.combatWin),
+        eventLeaders: _.map(eventLeaders, formatters.events),
+        soloLeaders: _.map(soloLeaders, formatters.soloSteps)
       });
     }).catch(e => console.error(e));
   });
