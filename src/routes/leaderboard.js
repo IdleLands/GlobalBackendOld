@@ -36,6 +36,9 @@ const queries = {
   },
   soloSteps: {
     'stats.Character.Movement.Solo': { $gt: 0 }
+  },
+  combatDamage: {
+    'stats.Combat.Give.Damage': { $gt: 0 }
   }
 };
 
@@ -72,6 +75,9 @@ const fields = {
   },
   soloSteps: {
     'stats.Character.Movement.Solo': 1
+  },
+  combatDamage: {
+    'stats.Combat.Give.Damage': 1
   }
 };
 
@@ -100,9 +106,6 @@ const params = {
   goodLuck: {
     sort: { 'statCache.luk': -1 }, limit: RUNNER_UPS
   },
-  badLuck: {
-    sort: { 'statCache.luk': 1 }, limit: RUNNER_UPS
-  },
   combatWin: {
     sort: { 'stats.Combat.Win': -1 }, limit: RUNNER_UPS
   },
@@ -111,17 +114,21 @@ const params = {
   },
   soloSteps: {
     sort: { 'stats.Character.Movement.Solo': -1 }, limit: RUNNER_UPS
+  },
+  combatDamage: {
+    sort: { 'stats.Combat.Give.Damage': -1 }, limit: RUNNER_UPS
   }
 };
 
 const formatters = {
-  ascension: (obj) => ({ _id: obj._id, ascension: _.get(obj, 'stats.Character.Ascension.Times', 0) }),
-  level:     (obj) => ({ _id: obj._id, level: _.get(obj, '_level.__current', 0) }),
-  steps:     (obj) => ({ _id: obj._id, steps: _.get(obj, 'stats.Character.Steps', 0) }),
-  luck:      (obj) => ({ _id: obj._id, luk: _.get(obj, 'statCache.luk', 0) }),
-  combatWin: (obj) => ({ _id: obj._id, combatWin: _.get(obj, 'stats.Combat.Win', 0) }),
-  events:    (obj) => ({ _id: obj._id, events: _.get(obj, 'stats.Character.Events', 0) }),
-  soloSteps: (obj) => ({ _id: obj._id, steps: _.get(obj, 'stats.Character.Movement.Solo', 0) })
+  ascension:    (obj) => ({ _id: obj._id, ascension: _.get(obj, 'stats.Character.Ascension.Times', 0) }),
+  level:        (obj) => ({ _id: obj._id, level: _.get(obj, '_level.__current', 0) }),
+  steps:        (obj) => ({ _id: obj._id, steps: _.get(obj, 'stats.Character.Steps', 0) }),
+  luck:         (obj) => ({ _id: obj._id, luk: _.get(obj, 'statCache.luk', 0) }),
+  combatWin:    (obj) => ({ _id: obj._id, combatWin: _.get(obj, 'stats.Combat.Win', 0) }),
+  events:       (obj) => ({ _id: obj._id, events: _.get(obj, 'stats.Character.Events', 0) }),
+  soloSteps:    (obj) => ({ _id: obj._id, steps: _.get(obj, 'stats.Character.Movement.Solo', 0) }),
+  combatDamage: (obj) => ({ _id: obj._id, damage: _.get(obj, 'stats.Combat.Give.Damage', 0) })
 };
 
 exports.route = (app) => {
@@ -135,10 +142,10 @@ exports.route = (app) => {
       DB.$players.find(queries.gold, fields.gold, params.gold),
       DB.$statistics.find(queries.steps, fields.steps, params.steps),
       DB.$players.find(queries.luck, fields.luck, params.goodLuck),
-      DB.$players.find(queries.luck, fields.luck, params.badLuck),
       DB.$statistics.find(queries.combatWin, fields.combatWin, params.combatWin),
       DB.$statistics.find(queries.events, fields.events, params.events),
-      DB.$statistics.find(queries.soloSteps, fields.soloSteps, params.soloSteps)
+      DB.$statistics.find(queries.soloSteps, fields.soloSteps, params.soloSteps),
+      DB.$statistics.find(queries.combatDamage, fields.combatDamage, params.combatDamage)
     ]).then(cursors => {
       return Promise.all(_.map(cursors, cursor => cursor.toArray()));
     }).then(([
@@ -150,10 +157,10 @@ exports.route = (app) => {
       goldLeaders,
       stepLeaders,
       goodLuckLeaders,
-      badLuckLeaders,
       combatWinLeaders,
       eventLeaders,
-      soloLeaders
+      soloLeaders,
+      damageLeaders
     ]) => {
       res.json({
         ascensionLeaders: _.map(ascensionLeaders, formatters.ascension),
@@ -164,10 +171,10 @@ exports.route = (app) => {
         goldLeaders,
         stepLeaders: _.map(stepLeaders, formatters.steps),
         goodLuckLeaders: _.map(goodLuckLeaders, formatters.luck),
-        badLuckLeaders: _.map(badLuckLeaders, formatters.luck),
         combatWinLeaders: _.map(combatWinLeaders, formatters.combatWin),
         eventLeaders: _.map(eventLeaders, formatters.events),
-        soloLeaders: _.map(soloLeaders, formatters.soloSteps)
+        soloLeaders: _.map(soloLeaders, formatters.soloSteps),
+        damageLeaders: _.map(damageLeaders, formatters.combatDamage)
       });
     }).catch(e => console.error(e));
   });
