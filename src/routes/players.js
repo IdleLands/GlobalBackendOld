@@ -83,6 +83,8 @@ exports.route = (app) => {
         achievements: achievements.achievements
       };
 
+      overview.hasDonated = achievements.achievements.Donator;
+
       res.json({ player });
 
     }).catch(err => {
