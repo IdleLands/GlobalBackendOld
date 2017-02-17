@@ -194,7 +194,7 @@ exports.route = (app) => {
               .take(RUNNER_UPS)
               .value();
 
-            console.log(ascLeaders);
+            console.log(levels, ascLeaders);
 
             const otherLeaders = subs > 0 ? _.map(subs, player => {
               return { _id: player._id, level: _.get(player, '_level.__current', 0) };
