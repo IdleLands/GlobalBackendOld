@@ -183,15 +183,17 @@ exports.route = (app) => {
             return Promise.all([levels, subCursor.toArray()]);
           })
           .then(([levels, subs]) => {
-            const ascLeaders = _(ascLevelLeaders).map(leader => {
-              const ascLevel = _.get(leader, 'stats.Character.Ascension.Levels', 0);
-              const level = _.get(_.find(levels, { _id: leader._id }), '_level.__current', 0);
-              return { _id: leader._id, level: level + ascLevel };
-            })
+            const ascLeaders = _(ascLevelLeaders)
+              .map(leader => {
+                const ascLevel = _.get(leader, 'stats.Character.Ascension.Levels', 0);
+                const level = _.get(_.find(levels, { _id: leader._id }), '_level.__current', 0);
+                return { _id: leader._id, level: level + ascLevel };
+              })
               .sortBy('level')
-              .reverse()
               .take(RUNNER_UPS)
               .value();
+
+            console.log(ascLeaders);
 
             const otherLeaders = subs > 0 ? _.map(subs, player => {
               return { _id: player._id, level: _.get(player, '_level.__current', 0) };
