@@ -180,7 +180,10 @@ exports.route = (app) => {
 
         return Promise.all([lvlPromises, subPromises])
           .then(([levels, subCursor]) => {
-            return Promise.all([levels, subCursor.toArray()]);
+            return Promise.all(levels)
+              .then(levels => {
+                return Promise.all([levels, subCursor.toArray()]);
+              });
           })
           .then(([levels, subs]) => {
             const ascLeaders = _(ascLevelLeaders)
