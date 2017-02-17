@@ -89,7 +89,7 @@ const fields = {
 
 const params = {
   ascLevel: {
-    limit: RUNNER_UPS, sort: { 'stats.Character.Ascension.Levels': -1 }
+    sort: { 'stats.Character.Ascension.Levels': -1 }, limit: RUNNER_UPS
   },
   ascension: {
     sort: { 'stats.Character.Ascension.Times': -1 }, limit: RUNNER_UPS
@@ -172,7 +172,11 @@ exports.route = (app) => {
         const names = _.map(ascLevelLeaders, '_id');
         const subs = RUNNER_UPS - ascLevelLeaders.length;
         const lvlPromises = _.map(ascLevelLeaders, player => DB.$players.findOne({ _id: player._id }, fields.level));
-        const subPromises = DB.$players.find({ name: { $nin: names }}, fields.level, { sort: { '_level.__current': -1 }, limit: subs });
+
+        let subPromises = { toArray: () => {} };
+        if(subs > 0) {
+          subPromises = DB.$players.find({ name: { $nin: names }}, fields.level, { sort: { '_level.__current': -1 }, limit: subs });
+        }
 
         return Promise.all([lvlPromises, subPromises])
           .then(([levels, subCursor]) => {
