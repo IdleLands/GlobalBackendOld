@@ -250,8 +250,8 @@ exports.route = (app) => {
       soloLeaders,
       drunkLeaders,
       damageLeaders,
-      takenDamageLeaders,
       overkillLeaders,
+      takenDamageLeaders,
       levelLeaders
     ]) => {
       res.json({
