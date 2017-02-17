@@ -6,11 +6,8 @@ const { DB } = require('../db');
 const RUNNER_UPS = 3;
 
 const queries = {
-  ascension: {
-    'stats.Character.Ascension.Times': { $gt: 0 }
-  },
-  level: {
-    '_level.__current': { $gt: 0 }
+  ascLevel: {
+    'stats.Character.Ascension.Levels': { $gt: 0 }
   },
   collectibles: {
     uniqueCollectibles: { $gt: 0 }
@@ -28,6 +25,9 @@ const queries = {
     'stats.Character.Steps': { $gt: 0 }
   },
   luck: {},
+  fateful: {
+    'stats.Character.Event.Providence': { $gt: 0 }
+  },
   combatWin: {
     'stats.Combat.Win': { $gt: 0 }
   },
@@ -43,6 +43,9 @@ const queries = {
 };
 
 const fields = {
+  ascLevel: {
+    'stats.Character.Ascension.Levels': 1
+  },
   ascension: {
     'stats.Character.Ascension.Times': 1
   },
@@ -67,6 +70,9 @@ const fields = {
   luck: {
     'statCache.luk': 1
   },
+  fateful: {
+    'stats.Character.Event.Providence': 1
+  },
   combatWin: {
     'stats.Combat.Win': 1
   },
@@ -82,6 +88,9 @@ const fields = {
 };
 
 const params = {
+  ascLevel: {
+    limit: RUNNER_UPS, sort: { 'stats.Character.Ascension.Levels': -1 }
+  },
   ascension: {
     sort: { 'stats.Character.Ascension.Times': -1 }, limit: RUNNER_UPS
   },
@@ -106,6 +115,9 @@ const params = {
   goodLuck: {
     sort: { 'statCache.luk': -1 }, limit: RUNNER_UPS
   },
+  fateful: {
+    sort: { 'stats.Character.Event.Providence': -1 }, limit: RUNNER_UPS
+  },
   combatWin: {
     sort: { 'stats.Combat.Win': -1 }, limit: RUNNER_UPS
   },
@@ -125,6 +137,7 @@ const formatters = {
   level:        (obj) => ({ _id: obj._id, level: _.get(obj, '_level.__current', 0) }),
   steps:        (obj) => ({ _id: obj._id, steps: _.get(obj, 'stats.Character.Steps', 0) }),
   luck:         (obj) => ({ _id: obj._id, luk: _.get(obj, 'statCache.luk', 0) }),
+  fateful:      (obj) => ({ _id: obj._id, fates: _.get(obj, 'stats.Character.Event.Providence', 0) }),
   combatWin:    (obj) => ({ _id: obj._id, combatWin: _.get(obj, 'stats.Combat.Win', 0) }),
   events:       (obj) => ({ _id: obj._id, events: _.get(obj, 'stats.Character.Events', 0) }),
   soloSteps:    (obj) => ({ _id: obj._id, steps: _.get(obj, 'stats.Character.Movement.Solo', 0) }),
@@ -134,43 +147,75 @@ const formatters = {
 exports.route = (app) => {
   app.get('/leaderboard', (req, res) => {
     Promise.all([
-      DB.$statistics.find(queries.ascension, fields.ascension, params.ascension),
-      DB.$players.find(queries.level, fields.level, params.level),
       DB.$collectibles.find(queries.collectibles, fields.collectibles, params.collectibles),
       DB.$achievements.find(queries.achievements, fields.achievements, params.achievements),
       DB.$achievements.find(queries.titles, fields.titles, params.titles),
       DB.$players.find(queries.gold, fields.gold, params.gold),
       DB.$statistics.find(queries.steps, fields.steps, params.steps),
       DB.$players.find(queries.luck, fields.luck, params.goodLuck),
+      DB.$statistics.find(queries.fateful, fields.fateful, params.fateful),
       DB.$statistics.find(queries.combatWin, fields.combatWin, params.combatWin),
       DB.$statistics.find(queries.events, fields.events, params.events),
       DB.$statistics.find(queries.soloSteps, fields.soloSteps, params.soloSteps),
       DB.$statistics.find(queries.combatDamage, fields.combatDamage, params.combatDamage)
     ]).then(cursors => {
       return Promise.all(_.map(cursors, cursor => cursor.toArray()));
+    }).then(data => {
+
+      return Promise.all([DB.$statistics.find(
+        queries.ascLevel,
+        fields.ascLevel,
+        params.ascLevel
+      )]).then(([ascLevelCursors]) => {
+        return ascLevelCursors.toArray();
+      }).then(ascLevelLeaders => {
+        const names = _.map(ascLevelLeaders, '_id');
+        const subs = RUNNER_UPS - ascLevelLeaders.length;
+        const lvlPromises = _.map(ascLevelLeaders, player => DB.$players.findOne({ _id: player._id }, fields.level));
+        const subPromises = DB.$players.find({ name: { $nin: names }}, fields.level, { sort: { '_level.__current': -1 }, limit: subs });
+
+        return Promise.all([lvlPromises, subPromises])
+          .then(([levels, subCursor]) => {
+            return Promise.all([levels, subCursor.toArray()]);
+          })
+          .then(([levels, subs]) => {
+            const ascLeaders = _.map(ascLevelLeaders, leader => {
+              const ascLevel = _.get(leader, 'stats.Character.Ascension.Levels', 0);
+              const level = _.get(_.find(levels, { _id: leader._id }), '_level.__current', 0);
+              return { _id: leader._id, level: level + ascLevel };
+            });
+
+            const otherLeaders = _.map(subs, player => {
+              return { _id: player._id, level: _.get(player, '_level.__current', 0) };
+            });
+
+            data.push(ascLeaders.concat(otherLeaders));
+            return data;
+          });
+      });
     }).then(([
-      ascensionLeaders,
-      levelLeaders,
       collectibleLeaders,
       achievementLeaders,
       titleLeaders,
       goldLeaders,
       stepLeaders,
       goodLuckLeaders,
+      fateLeaders,
       combatWinLeaders,
       eventLeaders,
       soloLeaders,
-      damageLeaders
+      damageLeaders,
+      levelLeaders
     ]) => {
       res.json({
-        ascensionLeaders: _.map(ascensionLeaders, formatters.ascension),
-        levelLeaders: _.map(levelLeaders, formatters.level),
+        levelLeaders,
         collectibleLeaders,
         achievementLeaders,
         titleLeaders,
         goldLeaders,
         stepLeaders: _.map(stepLeaders, formatters.steps),
         goodLuckLeaders: _.map(goodLuckLeaders, formatters.luck),
+        fateLeaders: _.map(fateLeaders, formatters.fateful),
         combatWinLeaders: _.map(combatWinLeaders, formatters.combatWin),
         eventLeaders: _.map(eventLeaders, formatters.events),
         soloLeaders: _.map(soloLeaders, formatters.soloSteps),
