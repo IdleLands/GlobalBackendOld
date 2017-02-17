@@ -89,7 +89,7 @@ const fields = {
 
 const params = {
   ascLevel: {
-    sort: { 'stats.Character.Ascension.Levels': -1 }, limit: RUNNER_UPS
+    sort: { 'stats.Character.Ascension.Levels': -1 }
   },
   ascension: {
     sort: { 'stats.Character.Ascension.Times': -1 }, limit: RUNNER_UPS
@@ -183,15 +183,19 @@ exports.route = (app) => {
             return Promise.all([levels, subCursor.toArray()]);
           })
           .then(([levels, subs]) => {
-            const ascLeaders = _.map(ascLevelLeaders, leader => {
+            const ascLeaders = _(ascLevelLeaders).map(leader => {
               const ascLevel = _.get(leader, 'stats.Character.Ascension.Levels', 0);
               const level = _.get(_.find(levels, { _id: leader._id }), '_level.__current', 0);
               return { _id: leader._id, level: level + ascLevel };
-            });
+            })
+              .sortBy('level')
+              .reverse()
+              .take(RUNNER_UPS)
+              .value();
 
-            const otherLeaders = _.map(subs, player => {
+            const otherLeaders = subs > 0 ? _.map(subs, player => {
               return { _id: player._id, level: _.get(player, '_level.__current', 0) };
-            });
+            }) : [];
 
             data.push(ascLeaders.concat(otherLeaders));
             return data;
