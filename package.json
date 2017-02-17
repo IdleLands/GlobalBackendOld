@@ -17,6 +17,9 @@
   "bugs": {
     "url": "https://github.com/IdleLands/GlobalBackend/issues"
   },
+  "engines": {
+    "node": "6.5.0"
+  },
   "homepage": "https://github.com/IdleLands/GlobalBackend#readme",
   "dependencies": {
     "cors": "^2.8.1",
