@@ -37,8 +37,17 @@ const queries = {
   soloSteps: {
     'stats.Character.Movement.Solo': { $gt: 0 }
   },
+  drunkSteps: {
+    'stats.Character.Movement.Drunk': { $gt: 0 }
+  },
   combatDamage: {
     'stats.Combat.Give.Damage': { $gt: 0 }
+  },
+  overkill: {
+    'stats.Combat.Give.Overkill': { $gt: 0 }
+  },
+  takenDamage: {
+    'stats.Combat.Receive.Damage': { $gt: 0 }
   }
 };
 
@@ -82,8 +91,17 @@ const fields = {
   soloSteps: {
     'stats.Character.Movement.Solo': 1
   },
+  drunkSteps: {
+    'stats.Character.Movement.Drunk': 1
+  },
   combatDamage: {
     'stats.Combat.Give.Damage': 1
+  },
+  overkill: {
+    'stats.Combat.Give.Overkill': 1
+  },
+  takenDamage: {
+    'stats.Combat.Receive.Damage': 1
   }
 };
 
@@ -127,8 +145,17 @@ const params = {
   soloSteps: {
     sort: { 'stats.Character.Movement.Solo': -1 }, limit: RUNNER_UPS
   },
+  drunkSteps: {
+    sort: { 'stats.Character.Movement.Drunk': -1 }, limit: RUNNER_UPS
+  },
   combatDamage: {
     sort: { 'stats.Combat.Give.Damage': -1 }, limit: RUNNER_UPS
+  },
+  overkill: {
+    sort: { 'stats.Combat.Give.Overkill': -1 }, limit: RUNNER_UPS
+  },
+  takenDamage: {
+    sort: { 'stats.Combat.Receive.Damage': -1 }, limit: RUNNER_UPS
   }
 };
 
@@ -141,7 +168,10 @@ const formatters = {
   combatWin:    (obj) => ({ _id: obj._id, combatWin: _.get(obj, 'stats.Combat.Win', 0) }),
   events:       (obj) => ({ _id: obj._id, events: _.get(obj, 'stats.Character.Events', 0) }),
   soloSteps:    (obj) => ({ _id: obj._id, steps: _.get(obj, 'stats.Character.Movement.Solo', 0) }),
-  combatDamage: (obj) => ({ _id: obj._id, damage: _.get(obj, 'stats.Combat.Give.Damage', 0) })
+  drunkSteps:   (obj) => ({ _id: obj._id, steps: _.get(obj, 'stats.Character.Movement.Drunk', 0) }),
+  combatDamage: (obj) => ({ _id: obj._id, damage: _.get(obj, 'stats.Combat.Give.Damage', 0) }),
+  overkill:     (obj) => ({ _id: obj._id, damage: _.get(obj, 'stats.Combat.Give.Overkill', 0) }),
+  takenDamage:  (obj) => ({ _id: obj._id, damage: _.get(obj, 'stats.Combat.Receive.Damage', 0) })
 };
 
 exports.route = (app) => {
@@ -157,11 +187,13 @@ exports.route = (app) => {
       DB.$statistics.find(queries.combatWin, fields.combatWin, params.combatWin),
       DB.$statistics.find(queries.events, fields.events, params.events),
       DB.$statistics.find(queries.soloSteps, fields.soloSteps, params.soloSteps),
-      DB.$statistics.find(queries.combatDamage, fields.combatDamage, params.combatDamage)
+      DB.$statistics.find(queries.drunkSteps, fields.drunkSteps, params.drunkSteps),
+      DB.$statistics.find(queries.combatDamage, fields.combatDamage, params.combatDamage),
+      DB.$statistics.find(queries.overkill, fields.overkill, params.overkill),
+      DB.$statistics.find(queries.takenDamage, fields.takenDamage, params.takenDamage)
     ]).then(cursors => {
       return Promise.all(_.map(cursors, cursor => cursor.toArray()));
     }).then(data => {
-
       return Promise.all([DB.$statistics.find(
         queries.ascLevel,
         fields.ascLevel,
@@ -216,7 +248,10 @@ exports.route = (app) => {
       combatWinLeaders,
       eventLeaders,
       soloLeaders,
+      drunkLeaders,
       damageLeaders,
+      takenDamageLeaders,
+      overkillLeaders,
       levelLeaders
     ]) => {
       res.json({
@@ -231,7 +266,10 @@ exports.route = (app) => {
         combatWinLeaders: _.map(combatWinLeaders, formatters.combatWin),
         eventLeaders: _.map(eventLeaders, formatters.events),
         soloLeaders: _.map(soloLeaders, formatters.soloSteps),
-        damageLeaders: _.map(damageLeaders, formatters.combatDamage)
+        drunkLeaders: _.map(drunkLeaders, formatters.drunkSteps),
+        damageLeaders: _.map(damageLeaders, formatters.combatDamage),
+        takenDamageLeaders: _.map(takenDamageLeaders, formatters.takenDamage),
+        overkillLeaders: _.map(overkillLeaders, formatters.overkill)
       });
     }).catch(e => console.error(e));
   });
