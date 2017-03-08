@@ -24,7 +24,9 @@ const playerFields = {
   _hp: 1,
   _mp: 1,
   _xp: 1,
-  statCache: 1
+  statCache: 1,
+  isOnline: 1,
+  lastLogin: 1
 };
 
 exports.route = (app) => {
