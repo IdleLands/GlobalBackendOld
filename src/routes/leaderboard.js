@@ -24,6 +24,12 @@ const queries = {
   steps: {
     'stats.Character.Steps': { $gt: 0 }
   },
+  astralSteps: {
+    'stats.Character.Terrains.Astral': { $gt: 0 }
+  },
+  acidSteps: {
+    'stats.Character.Terrains.Acid': { $gt: 0 }
+  },
   luck: {},
   fateful: {
     'stats.Character.Event.Providence': { $gt: 0 }
@@ -40,8 +46,20 @@ const queries = {
   drunkSteps: {
     'stats.Character.Movement.Drunk': { $gt: 0 }
   },
+  campingSteps: {
+    'stats.Character.Movement.Camping': { $gt: 0 }
+  },
+  partySteps: {
+    'stats.Character.Movement.Party': { $gt: 0 }
+  },
   combatDamage: {
     'stats.Combat.Give.Damage': { $gt: 0 }
+  },
+  monsterKills: {
+    'stats.Combat.Kills.Monster': { $gt: 0 }
+  },
+  playerKills: {
+    'stats.Combat.Kills.Player': { $gt: 0 }
   },
   overkill: {
     'stats.Combat.Give.Overkill': { $gt: 0 }
@@ -76,6 +94,12 @@ const fields = {
   steps: {
     'stats.Character.Steps': 1
   },
+  astralSteps: {
+    'stats.Character.Terrains.Astral': 1
+  },
+  acidSteps: {
+    'stats.Character.Terrains.Acid': 1
+  },
   luck: {
     'statCache.luk': 1
   },
@@ -94,8 +118,20 @@ const fields = {
   drunkSteps: {
     'stats.Character.Movement.Drunk': 1
   },
+  campingSteps: {
+    'stats.Character.Movement.Camping': 1
+  },
+  partySteps: {
+    'stats.Character.Movement.Party': 1
+  },
   combatDamage: {
     'stats.Combat.Give.Damage': 1
+  },
+  monsterKills: {
+    'stats.Combat.Kills.Monster': 1
+  },
+  playerKills: {
+    'stats.Combat.Kills.Player': 1
   },
   overkill: {
     'stats.Combat.Give.Overkill': 1
@@ -130,6 +166,12 @@ const params = {
   steps: {
     sort: { 'stats.Character.Steps': -1 }, limit: RUNNER_UPS
   },
+  astralSteps: {
+    sort: { 'stats.Character.Terrains.Astral': -1 }, limit: RUNNER_UPS
+  },
+  acidSteps: {
+    sort: { 'stats.Character.Terrains.Acid': -1 }, limit: RUNNER_UPS
+  },
   goodLuck: {
     sort: { 'statCache.luk': -1 }, limit: RUNNER_UPS
   },
@@ -148,8 +190,20 @@ const params = {
   drunkSteps: {
     sort: { 'stats.Character.Movement.Drunk': -1 }, limit: RUNNER_UPS
   },
+  campingSteps: {
+    sort: { 'stats.Character.Movement.Camping': -1 }, limit: RUNNER_UPS
+  },
+  partySteps: {
+    sort: { 'stats.Character.Movement.Party': -1 }, limit: RUNNER_UPS
+  },
   combatDamage: {
     sort: { 'stats.Combat.Give.Damage': -1 }, limit: RUNNER_UPS
+  },
+  monsterKills: {
+    sort: { 'stats.Combat.Kills.Monster': -1 }, limit: RUNNER_UPS
+  },
+  playerKills: {
+    sort: { 'stats.Combat.Kills.Player': -1 }, limit: RUNNER_UPS
   },
   overkill: {
     sort: { 'stats.Combat.Give.Overkill': -1 }, limit: RUNNER_UPS
@@ -163,13 +217,19 @@ const formatters = {
   ascension:    (obj) => ({ _id: obj._id, ascension: _.get(obj, 'stats.Character.Ascension.Times', 0) }),
   level:        (obj) => ({ _id: obj._id, level: _.get(obj, '_level.__current', 0) }),
   steps:        (obj) => ({ _id: obj._id, steps: _.get(obj, 'stats.Character.Steps', 0) }),
+  astralSteps:  (obj) => ({ _id: obj._id, steps: _.get(obj, 'stats.Character.Terrains.Astral', 0) }),
+  acidSteps:    (obj) => ({ _id: obj._id, steps: _.get(obj, 'stats.Character.Terrains.Acid', 0) }),
   luck:         (obj) => ({ _id: obj._id, luk: _.get(obj, 'statCache.luk', 0) }),
   fateful:      (obj) => ({ _id: obj._id, fates: _.get(obj, 'stats.Character.Event.Providence', 0) }),
   combatWin:    (obj) => ({ _id: obj._id, combatWin: _.get(obj, 'stats.Combat.Win', 0) }),
   events:       (obj) => ({ _id: obj._id, events: _.get(obj, 'stats.Character.Events', 0) }),
   soloSteps:    (obj) => ({ _id: obj._id, steps: _.get(obj, 'stats.Character.Movement.Solo', 0) }),
   drunkSteps:   (obj) => ({ _id: obj._id, steps: _.get(obj, 'stats.Character.Movement.Drunk', 0) }),
+  campingSteps: (obj) => ({ _id: obj._id, steps: _.get(obj, 'stats.Character.Movement.Camping', 0) }),
+  partySteps:   (obj) => ({ _id: obj._id, steps: _.get(obj, 'stats.Character.Movement.Party', 0) }),
   combatDamage: (obj) => ({ _id: obj._id, damage: _.get(obj, 'stats.Combat.Give.Damage', 0) }),
+  monsterKills: (obj) => ({ _id: obj._id, kills: _.get(obj, 'stats.Combat.Kills.Monster', 0) }),
+  playerKills:  (obj) => ({ _id: obj._id, kills: _.get(obj, 'stats.Combat.Kills.Player', 0) }),
   overkill:     (obj) => ({ _id: obj._id, damage: _.get(obj, 'stats.Combat.Give.Overkill', 0) }),
   takenDamage:  (obj) => ({ _id: obj._id, damage: _.get(obj, 'stats.Combat.Receive.Damage', 0) })
 };
@@ -182,13 +242,19 @@ exports.route = (app) => {
       DB.$achievements.find(queries.titles, fields.titles, params.titles),
       DB.$players.find(queries.gold, fields.gold, params.gold),
       DB.$statistics.find(queries.steps, fields.steps, params.steps),
+      DB.$statistics.find(queries.astralSteps, fields.astralSteps, params.astralSteps),
+      DB.$statistics.find(queries.acidSteps, fields.acidSteps, params.acidSteps),
       DB.$players.find(queries.luck, fields.luck, params.goodLuck),
       DB.$statistics.find(queries.fateful, fields.fateful, params.fateful),
       DB.$statistics.find(queries.combatWin, fields.combatWin, params.combatWin),
       DB.$statistics.find(queries.events, fields.events, params.events),
       DB.$statistics.find(queries.soloSteps, fields.soloSteps, params.soloSteps),
       DB.$statistics.find(queries.drunkSteps, fields.drunkSteps, params.drunkSteps),
+      DB.$statistics.find(queries.campingSteps, fields.campingSteps, params.campingSteps),
+      DB.$statistics.find(queries.partySteps, fields.partySteps, params.partySteps),
       DB.$statistics.find(queries.combatDamage, fields.combatDamage, params.combatDamage),
+      DB.$statistics.find(queries.monsterKills, fields.monsterKills, params.monsterKills),
+      DB.$statistics.find(queries.playerKills, fields.playerKills, params.playerKills),
       DB.$statistics.find(queries.overkill, fields.overkill, params.overkill),
       DB.$statistics.find(queries.takenDamage, fields.takenDamage, params.takenDamage)
     ]).then(cursors => {
@@ -243,13 +309,19 @@ exports.route = (app) => {
       titleLeaders,
       goldLeaders,
       stepLeaders,
+      astralLeaders,
+      acidLeaders,
       goodLuckLeaders,
       fateLeaders,
       combatWinLeaders,
       eventLeaders,
       soloLeaders,
       drunkLeaders,
+      campingLeaders,
+      partyLeaders,
       damageLeaders,
+      monsterLeaders,
+      playerLeaders,
       overkillLeaders,
       takenDamageLeaders,
       levelLeaders
@@ -261,13 +333,19 @@ exports.route = (app) => {
         titleLeaders,
         goldLeaders,
         stepLeaders: _.map(stepLeaders, formatters.steps),
+        astralLeaders: _.map(astralLeaders, formatters.astralSteps),
+        acidLeaders: _.map(astralLeaders, formatters.acidLeaders),
         goodLuckLeaders: _.map(goodLuckLeaders, formatters.luck),
         fateLeaders: _.map(fateLeaders, formatters.fateful),
         combatWinLeaders: _.map(combatWinLeaders, formatters.combatWin),
         eventLeaders: _.map(eventLeaders, formatters.events),
         soloLeaders: _.map(soloLeaders, formatters.soloSteps),
         drunkLeaders: _.map(drunkLeaders, formatters.drunkSteps),
+        campingLeaders: _.map(campingLeaders, formatters.campingSteps),
+        partyLeaders: _.map(partyLeaders, formatters.partySteps),
         damageLeaders: _.map(damageLeaders, formatters.combatDamage),
+        monsterLeaders: _.map(monsterLeaders, formatters.monsterKills),
+        playerLeaders: _.map(playerLeaders, formatters.playerKills),
         takenDamageLeaders: _.map(takenDamageLeaders, formatters.takenDamage),
         overkillLeaders: _.map(overkillLeaders, formatters.overkill)
       });
