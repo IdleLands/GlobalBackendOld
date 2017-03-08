@@ -334,7 +334,7 @@ exports.route = (app) => {
         goldLeaders,
         stepLeaders: _.map(stepLeaders, formatters.steps),
         astralLeaders: _.map(astralLeaders, formatters.astralSteps),
-        acidLeaders: _.map(astralLeaders, formatters.acidSteps),
+        acidLeaders: _.map(acidLeaders, formatters.acidSteps),
         goodLuckLeaders: _.map(goodLuckLeaders, formatters.luck),
         fateLeaders: _.map(fateLeaders, formatters.fateful),
         combatWinLeaders: _.map(combatWinLeaders, formatters.combatWin),
