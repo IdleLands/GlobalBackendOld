@@ -3,7 +3,7 @@ const _ = require('lodash');
 
 const { DB } = require('../db');
 
-const RUNNER_UPS = 3;
+const RUNNER_UPS = 5;
 
 const queries = {
   ascLevel: {
