@@ -21,6 +21,7 @@ class Database {
         this.$statistics =    client.collection('statistics');
         this.$collectibles =  client.collection('collectibles');
         this.$achievements =  client.collection('achievements');
+        this.$guilds =        client.collection('guilds');
         resolve();
       });
     });
