@@ -19,7 +19,9 @@ const guildFields = {
   members: 1,
   gold: 1,
   taxRate: 1,
-  maxMembers: 1
+  maxMembers: 1,
+  buildings: 1,
+  resources: 1
 };
 
 exports.route = (app) => {
