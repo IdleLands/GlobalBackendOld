@@ -66,6 +66,15 @@ const queries = {
   },
   takenDamage: {
     'stats.Combat.Receive.Damage': { $gt: 0 }
+  },
+  ascendGold: {
+    'stats.Character.Ascension.Gold': { $gt: 0 }
+  },
+  ascendItem: {
+    'stats.Character.Ascension.ItemScore': { $gt: 0 }
+  },
+  ascendColl: {
+    'stats.Character.Ascension.CollectiblesFound': { $gt: 0 }
   }
 };
 
@@ -138,6 +147,15 @@ const fields = {
   },
   takenDamage: {
     'stats.Combat.Receive.Damage': 1
+  },
+  ascendGold: {
+    'stats.Character.Ascension.Gold': 1
+  },
+  ascendItem: {
+    'stats.Character.Ascension.ItemScore': 1
+  },
+  ascendColl: {
+    'stats.Character.Ascension.CollectiblesFound': 1
   }
 };
 
@@ -210,6 +228,15 @@ const params = {
   },
   takenDamage: {
     sort: { 'stats.Combat.Receive.Damage': -1 }, limit: RUNNER_UPS
+  },
+  ascendGold: {
+    sort: { 'stats.Character.Ascension.Gold': -1 }, limit: RUNNER_UPS
+  },
+  ascendItem: {
+    sort: { 'stats.Character.Ascension.ItemScore': -1 }, limit: RUNNER_UPS
+  },
+  ascendColl: {
+    sort: { 'stats.Character.Ascension.CollectiblesFound': -1 }, limit: RUNNER_UPS
   }
 };
 
@@ -231,7 +258,10 @@ const formatters = {
   monsterKills: (obj) => ({ _id: obj._id, kills: _.get(obj, 'stats.Combat.Kills.Monster', 0) }),
   playerKills:  (obj) => ({ _id: obj._id, kills: _.get(obj, 'stats.Combat.Kills.Player', 0) }),
   overkill:     (obj) => ({ _id: obj._id, damage: _.get(obj, 'stats.Combat.Give.Overkill', 0) }),
-  takenDamage:  (obj) => ({ _id: obj._id, damage: _.get(obj, 'stats.Combat.Receive.Damage', 0) })
+  takenDamage:  (obj) => ({ _id: obj._id, damage: _.get(obj, 'stats.Combat.Receive.Damage', 0) }),
+  ascendGold:   (obj) => ({ _id: obj._id, ascend: _.get(obj, 'stats.Character.Ascension.Gold', 0) }),
+  ascendItem:   (obj) => ({ _id: obj._id, ascend: _.get(obj, 'stats.Character.Ascension.ItemScore', 0) }),
+  ascendColl:   (obj) => ({ _id: obj._id, ascend: _.get(obj, 'stats.Character.Ascension.CollectiblesFound', 0) })
 };
 
 exports.route = (app) => {
@@ -256,7 +286,10 @@ exports.route = (app) => {
       DB.$statistics.find(queries.monsterKills, fields.monsterKills, params.monsterKills),
       DB.$statistics.find(queries.playerKills, fields.playerKills, params.playerKills),
       DB.$statistics.find(queries.overkill, fields.overkill, params.overkill),
-      DB.$statistics.find(queries.takenDamage, fields.takenDamage, params.takenDamage)
+      DB.$statistics.find(queries.takenDamage, fields.takenDamage, params.takenDamage),
+      DB.$statistics.find(queries.ascendGold, fields.ascendGold, params.ascendGold),
+      DB.$statistics.find(queries.ascendItem, fields.ascendItem, params.ascendItem),
+      DB.$statistics.find(queries.ascendColl, fields.ascendColl, params.ascendColl)
     ]).then(cursors => {
       return Promise.all(_.map(cursors, cursor => cursor.toArray()));
     }).then(data => {
@@ -324,6 +357,9 @@ exports.route = (app) => {
       playerLeaders,
       overkillLeaders,
       takenDamageLeaders,
+      ascGoldLeaders,
+      ascItemLeaders,
+      ascCollLeaders,
       levelLeaders
     ]) => {
       res.json({
@@ -347,7 +383,10 @@ exports.route = (app) => {
         monsterLeaders: _.map(monsterLeaders, formatters.monsterKills),
         playerLeaders: _.map(playerLeaders, formatters.playerKills),
         takenDamageLeaders: _.map(takenDamageLeaders, formatters.takenDamage),
-        overkillLeaders: _.map(overkillLeaders, formatters.overkill)
+        overkillLeaders: _.map(overkillLeaders, formatters.overkill),
+        ascGoldLeaders: _.map(ascGoldLeaders, formatters.ascendGold),
+        ascItemLeaders: _.map(ascItemLeaders, formatters.ascendItem),
+        ascCollLeaders: _.map(ascCollLeaders, formatters.ascendColl)
       });
     }).catch(e => console.error(e));
   });
